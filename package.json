@@ -1,0 +1,15 @@
+{
+  "name": "automatan",
+  "version": "0.1.0",
+  "description": "Cute automa-tan will automate your anime life",
+  "main": "src/index.js",
+  "scripts": {
+    "run": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.4.32",
+    "@types/node": "^7.0.5"
+  },
+  "repository": "https://github.com/Qwaz/automatan"
+}
