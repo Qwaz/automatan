@@ -12,10 +12,22 @@ export class File {
         <span class="brand-logo center">Automatan</span>
     </div>
 </nav>
-<div class="container">
-<ul>
-    <li *ngFor="let file of files">{{file.fileName}}</li>
-</ul>
+<div class="app-main">
+<div class="row">
+    <div class="col s8">
+        <table class="highlight">
+            <thead>
+                <tr><th data-field="fileName">Files</th></tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let file of files"><td>{{file.fileName}}</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col s4">
+        Action Menu Here
+    </div>
+</div>
 </div>
 `
 })
