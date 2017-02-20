@@ -5,8 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <link href="../node_modules/normalize.css/normalize.css" rel="stylesheet">
+
     <link href="../node_modules/material-design-icons/iconfont/material-icons.css" rel="stylesheet">
-    <link href="../node_modules/@angular/material/core/theming/prebuilt/indigo-pink.css" rel="stylesheet">
+    <link href="../node_modules/materialize-css/dist/css/materialize.min.css" rel="stylesheet">
+
+    <link href="styles.css" rel="stylesheet">
 
     <!-- Polyfill(s) for older browsers -->
     <script src="../node_modules/core-js/client/shim.min.js"></script>
@@ -20,7 +24,16 @@
     </script>
 </head>
 
-<body class="mat-app-background">
-<my-app>Loading...</my-app>
+<body>
+<my-app>
+    <div class="loading-container">
+        <div class="loading-item">Loading...</div>
+    </div>
+</my-app>
+<script type="text/javascript">
+    window.$ = window.jQuery = require('../node_modules/jquery/dist/jquery.min.js');
+    window.Hammer = require('../node_modules/hammerjs/hammer.min');
+</script>
+<script type="text/javascript" src="../node_modules/materialize-css/dist/js/materialize.min.js"></script>
 </body>
 </html>
