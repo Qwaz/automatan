@@ -1,0 +1,51 @@
+<div class="flex-v-container" id="main-window">
+    <nav class="flex-none">
+        <div class="nav-wrapper">
+            <span class="brand-logo center">Automatan</span>
+        </div>
+    </nav>
+    <div class="flex1 flex-h-container">
+        <div class="flex2 flex-v-container"
+             (dragover)="preventDefault()" (dragleave)="preventDefault()" (dragend)="preventDefault()" (drop)="onDropFiles($event)">
+            <table class="highlight flex-v-container">
+                <thead>
+                <tr><th data-field="fileName">{{files.length}} Files</th></tr>
+                </thead>
+                <tbody class="flex1 overflow-auto flex-v-container">
+                <tr *ngFor="let file of files"><td>{{file.name}}</td></tr>
+                </tbody>
+            </table>
+            <div class="flex-h-container flex1 flex-center">
+                <h4 class="grey-text disable-select" *ngIf="files.length == 0">Drag & Drop files here</h4>
+            </div>
+            <div class="inner-padding border-top">
+                <button class="waves-effect waves-light btn-flat right" (click)="clearFiles()">Clear</button>
+            </div>
+        </div>
+        <div class="flex1 border-left flex-v-container inner-padding">
+            <div class="flex1">
+                <form>
+                    <div class="input-field">
+                        <input id="raws_info" placeholder="(not detected)" type="text" class="validate">
+                        <label for="raws_info">Raws</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="title_info" value="Gochuumon wa Usagi Desuka 2" type="text" class="validate">
+                        <label for="title_info">Title</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="episode_style_info" value=" - %" type="text" class="validate">
+                        <label for="episode_style_info">Episode</label>
+                    </div>
+                    <div class="input-field">
+                        <input id="codec_info" value="(BD 1280x720 x264 AAC)" type="text" class="validate">
+                        <label for="codec_info">Codec</label>
+                    </div>
+                </form>
+            </div>
+            <div class="flex-none flex-hr-container" id="actions">
+                <a class="btn-floating btn-large waves-effect waves-light z-depth-3 right"><i class="material-icons">done</i></a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -44,10 +44,26 @@ nav {
 }
 
 /*
+utility
+ */
+
+.disable-select {
+    -webkit-user-select: none;
+}
+
+.overflow-auto {
+    overflow-y: auto;
+}
+
+/*
 borders
  */
 .border-left {
     border-left: #d0d0d0 solid 1px;
+}
+
+.border-top {
+    border-top: #d0d0d0 solid 1px;
 }
 
 /*
@@ -61,6 +77,21 @@ flex related
 .flex-v-container {
     display: flex;
     flex-direction: column;
+}
+
+.flex-hr-container {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.flex-vr-container {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
 }
 
 .flex-none {
