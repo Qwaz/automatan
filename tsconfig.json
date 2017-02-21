@@ -10,7 +10,7 @@
     "noUnusedParameters": true,
     "removeComments": true,
     "sourceMap": true,
-    "types": ["node", "electron"]
+    "types": ["node", "electron", "materialize-css"]
   },
   "include": [
     "src/**/*"
