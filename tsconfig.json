@@ -9,8 +9,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "removeComments": true,
-    "sourceMap": true,
-    "types": ["node", "electron", "materialize-css"]
+    "sourceMap": true
   },
   "include": [
     "src/**/*"

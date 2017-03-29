@@ -1,4 +1,7 @@
 import {AfterViewChecked, Component} from "@angular/core";
+import * as _ from "lodash";
+import * as fs from "fs";
+import isValidFileName = require("valid-filename");
 
 declare let Materialize: Materialize.Materialize;
 
@@ -36,12 +39,9 @@ function parseAnimeName(animeName: string): ParsedAnimeName | null {
     };
 }
 
-function extractEpisodePattern(parsed: ParsedAnimeName): string {
-    let lastIndex = parsed.episodeFull.lastIndexOf(parsed.episodeNumber);
-    let len = parsed.episodeNumber.length;
-
-    return parsed.episodeFull.substring(0, lastIndex) +
-        '?' + parsed.episodeFull.substring(lastIndex+len);
+function replaceLast(str: string, pattern: string, to: string): string {
+    let lastIndex = str.lastIndexOf(pattern);
+    return str.substring(0, lastIndex) + to + str.substring(lastIndex+pattern.length);
 }
 
 export enum PatternException {
@@ -99,29 +99,27 @@ export class AppComponent implements AfterViewChecked {
     }
 
     onDropFiles(e: DragEvent) {
-        console.log(e);
         this.clearInitialPattern();
 
         for (let i = 0; i < e.dataTransfer.files.length; i++) {
-            let f = e.dataTransfer.files[i];
-            console.log(f);
+            let file = e.dataTransfer.files[i];
 
-            let parsed = parseAnimeName(f.name);
+            let parsed = parseAnimeName(file.name);
             if (parsed) {
                 this.files.push({
-                    name: f.name,
-                    path: f.path,
-                    size: f.size,
-                    type: f.type,
-                    targetName: f.name,
+                    name: file.name,
+                    path: file.path,
+                    size: file.size,
+                    type: file.type,
+                    targetName: file.name,
                 });
 
                 this.updateInitialPattern('raws', parsed.raws);
                 this.updateInitialPattern('title', parsed.title);
-                this.updateInitialPattern('episode', extractEpisodePattern(parsed));
+                this.updateInitialPattern('episode', replaceLast(parsed.episodeFull, parsed.episodeNumber, '?'));
                 this.updateInitialPattern('codec', parsed.codec);
             } else {
-                alert(`Cannot parse "${f.name}"`);
+                alert(`Cannot parse "${file.name}"`);
             }
         }
         this.files.sort((f1, f2) => f1.name.localeCompare(f2.name));
@@ -162,7 +160,30 @@ export class AppComponent implements AfterViewChecked {
     }
 
     confirmChange() {
-        // TODO: update real filename
+        if (_.every(this.files, (file) => this.isValidFileName(file.targetName))) {
+            console.log(this.files);
+
+            this.files.forEach((file) => {
+                fs.rename(file.path, replaceLast(file.path, file.name, file.targetName), () => {
+                    // TODO: error handling
+                    file.name = file.targetName;
+                });
+            })
+        } else {
+            alert('Invalid File Name Exist!');
+        }
+    }
+
+    isValidFileName(fileName: string) {
+        let fileCount = _.sumBy(this.files, (file) => file.targetName == fileName ? 1 : 0);
+        return isValidFileName(fileName) && fileCount == 1;
+    }
+
+    validFilenameClass(fileName: string) {
+        return this.isValidFileName(fileName) ? {} : {
+            "red": true,
+            "lighten-5": true,
+        };
     }
 
     private updateInitialPattern(key: keyof InitialPattern, value: string): void {

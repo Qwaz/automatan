@@ -23,7 +23,13 @@
             '@angular/router': 'npm:@angular/router/bundles/router.umd.js',
             '@angular/forms': 'npm:@angular/forms/bundles/forms.umd.js',
 
+            'fs': '@node/fs',
+
             'jquery': 'npm:jquery/dist/jquery.min.js',
+            'lodash': 'npm:lodash/lodash.js',
+
+            'filename-reserved-regex': 'npm:filename-reserved-regex/index.js',
+            'valid-filename': 'npm:valid-filename/index.js',
 
             // other libraries
             'rxjs': 'npm:rxjs'
