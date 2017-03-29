@@ -12,7 +12,7 @@
                 <tr><th data-field="fileName">{{files.length}} Files</th></tr>
                 </thead>
                 <tbody class="flex1 overflow-auto flex-v-container">
-                <tr *ngFor="let file of files"><td>{{file.name}}</td></tr>
+                <tr *ngFor="let file of files"><td><pre class="keep-font">{{file.targetName}}</pre></td></tr>
                 </tbody>
             </table>
             <div class="flex-h-container flex1 flex-center">
@@ -29,30 +29,34 @@
                             [input_id]="'raws_info'"
                             [input_label]="'Raws'"
                             [placeholder]="exceptionString(initialPattern.raws)"
-                            [(value)]="targetPattern.raws">
+                            [(value)]="targetPattern.raws"
+                            (valueChange)="updateFiles()">
                     </labeled-input>
                     <labeled-input
                             [input_id]="'title_info'"
                             [input_label]="'Title'"
                             [placeholder]="exceptionString(initialPattern.title)"
-                            [(value)]="targetPattern.title">
+                            [(value)]="targetPattern.title"
+                            (valueChange)="updateFiles()">
                     </labeled-input>
                     <labeled-input
                             [input_id]="'episode_info'"
                             [input_label]="'Episode'"
                             [placeholder]="exceptionString(initialPattern.episode)"
-                            [(value)]="targetPattern.episode">
+                            [(value)]="targetPattern.episode"
+                            (valueChange)="updateFiles()">
                     </labeled-input>
                     <labeled-input
                             [input_id]="'codec_info'"
                             [input_label]="'Codec'"
                             [placeholder]="exceptionString(initialPattern.codec)"
-                            [(value)]="targetPattern.codec">
+                            [(value)]="targetPattern.codec"
+                            (valueChange)="updateFiles()">
                     </labeled-input>
                 </form>
             </div>
             <div class="flex-none flex-hr-container" id="actions">
-                <a class="btn-floating btn-large waves-effect waves-light z-depth-3 right"><i class="material-icons">done</i></a>
+                <button class="btn-floating btn-large waves-effect waves-light z-depth-3 right" (click)="confirmChange()"><i class="material-icons">done</i></button>
             </div>
         </div>
     </div>

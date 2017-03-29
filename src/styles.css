@@ -9,6 +9,13 @@ th, td {
     padding-left: 16px;
 }
 
+pre.keep-font {
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
+    margin: 0;
+}
+
 /*
 loading
  */

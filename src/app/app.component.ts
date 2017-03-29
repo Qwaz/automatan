@@ -7,20 +7,60 @@ export interface File {
     path: string;
     size: number;
     type: string;
+    targetName: string;
+}
+
+interface ParsedAnimeName {
+    raws: string;
+    title: string;
+    episodeFull: string;
+    episodeNumber: string;
+    etc: string;
+    codec: string;
+    extension: string;
+}
+
+function parseAnimeName(animeName: string): ParsedAnimeName | null {
+    let pattern: RegExp = /^((?:\[.*\])?)\s*(.*?(?:[_\s]S?\d+)?)\s+((?:[\-#제第E]|Ep\.?|OP|ED|Vol\.?)?\s*(\d+(?:\.\d)?)(?:[화話]|s|ns)?)(.*?)\s*(\([^()]{5,}\))?\.(.{2,4})$/i;
+
+    let match = pattern.exec(animeName);
+
+    return {
+        raws: match[1],
+        title: match[2],
+        episodeFull: match[3],
+        episodeNumber: match[4],
+        etc: match[5],
+        codec: match[6],
+        extension: match[7],
+    };
+}
+
+function extractEpisodePattern(parsed: ParsedAnimeName): string {
+    let lastIndex = parsed.episodeFull.lastIndexOf(parsed.episodeNumber);
+    let len = parsed.episodeNumber.length;
+
+    return parsed.episodeFull.substring(0, lastIndex) +
+        '?' + parsed.episodeFull.substring(lastIndex+len);
 }
 
 export enum PatternException {
-    Empty,
-    Various
+    Clear,
+    Various,
 }
 
-type PatternValue = PatternException | string;
+export interface InitialPattern {
+    raws: PatternException | string;
+    title: PatternException | string;
+    episode: PatternException | string;
+    codec: PatternException | string;
+}
 
-export interface Pattern {
-    raws: PatternValue;
-    title: PatternValue;
-    episode: PatternValue;
-    codec: PatternValue;
+export interface TargetPattern {
+    raws: string;
+    title: string;
+    episode: string;
+    codec: string;
 }
 
 @Component({
@@ -31,13 +71,13 @@ export interface Pattern {
 export class AppComponent implements AfterViewChecked {
     files: File[] = [];
 
-    exceptionString(patternValue: PatternValue) {
-        if (patternValue === PatternException.Empty) return "(not detected)";
+    exceptionString(patternValue: PatternException | string) {
+        if (patternValue === PatternException.Clear) return "(not detected)";
         else if (patternValue === PatternException.Various) return "(various)";
         else return "";
     }
 
-    patternString(patternValue: PatternValue) {
+    patternString(patternValue: PatternException | string) {
         if (typeof patternValue === "string") {
             return patternValue;
         } else {
@@ -45,76 +85,48 @@ export class AppComponent implements AfterViewChecked {
         }
     }
 
-    initialPattern: Pattern = {
-        raws: PatternException.Empty,
-        title: PatternException.Empty,
-        episode: PatternException.Empty,
-        codec: PatternException.Empty,
+    initialPattern: InitialPattern = {
+        raws: PatternException.Clear,
+        title: PatternException.Clear,
+        episode: PatternException.Clear,
+        codec: PatternException.Clear,
     };
 
-    targetPattern: Pattern;
+    targetPattern: TargetPattern;
 
     ngAfterViewChecked() {
         Materialize.updateTextFields();
     }
 
     onDropFiles(e: DragEvent) {
-        function updatePattern(pattern: Pattern, key: keyof Pattern, value: string): void {
-            if (typeof pattern[key] == 'string') {
-                if (pattern[key] != value) {
-                    pattern[key] = PatternException.Various;
-                }
-            } else {
-                if (pattern[key] == PatternException.Empty) {
-                    pattern[key] = value;
-                }
-            }
-        }
-
-        function episodePatternExtract(episodePattern: string, episodeNumber: string): string {
-            let lastIndex = episodePattern.lastIndexOf(episodeNumber);
-            let len = episodeNumber.length;
-
-            return episodePattern.substring(0, lastIndex) +
-                    '?' + episodePattern.substring(lastIndex+len);
-        }
-
-        let pattern: RegExp = /^((?:\[.*\])?)\s*(.*?(?:[_\s]S?\d+)?)\s+((?:[\-#제第E]|Ep\.?|OP|ED|Vol\.?)?\s*(\d+(?:\.\d)?)(?:[화話]|s|ns)?)(.*?)\s*(\([^()]{5,}\))?\..{2,4}$/i;
-
         console.log(e);
-
-        this.initialPattern.raws = PatternException.Empty;
-        this.initialPattern.title = PatternException.Empty;
-        this.initialPattern.episode = PatternException.Empty;
-        this.initialPattern.codec = PatternException.Empty;
+        this.clearInitialPattern();
 
         for (let i = 0; i < e.dataTransfer.files.length; i++) {
             let f = e.dataTransfer.files[i];
             console.log(f);
 
-            let match = pattern.exec(f.name);
-
-            if (match) {
+            let parsed = parseAnimeName(f.name);
+            if (parsed) {
                 this.files.push({
                     name: f.name,
                     path: f.path,
                     size: f.size,
-                    type: f.type
+                    type: f.type,
+                    targetName: f.name,
                 });
 
-                updatePattern(this.initialPattern, 'raws', match[1]);
-                updatePattern(this.initialPattern, 'title', match[2]);
-                updatePattern(this.initialPattern, 'episode', episodePatternExtract(match[3], match[4]));
-                updatePattern(this.initialPattern, 'codec', match[6]);
-
-                console.log(match);
+                this.updateInitialPattern('raws', parsed.raws);
+                this.updateInitialPattern('title', parsed.title);
+                this.updateInitialPattern('episode', extractEpisodePattern(parsed));
+                this.updateInitialPattern('codec', parsed.codec);
             } else {
                 alert(`Cannot parse "${f.name}"`);
             }
         }
         this.files.sort((f1, f2) => f1.name.localeCompare(f2.name));
 
-        this.parsePattern();
+        this.updateTargetPattern();
 
         return false;
     }
@@ -122,28 +134,70 @@ export class AppComponent implements AfterViewChecked {
     clearFiles() {
         this.files = [];
 
-        this.initialPattern = {
-            raws: PatternException.Empty,
-            title: PatternException.Empty,
-            episode: PatternException.Empty,
-            codec: PatternException.Empty,
-        };
-
-        this.parsePattern();
+        this.clearInitialPattern();
+        this.updateTargetPattern();
     }
 
-    private parsePattern() {
+    updateFiles() {
+        function applyPattern(initialPattern: PatternException | string, targetPattern: string, originalValue: string) {
+            if (initialPattern == PatternException.Various && targetPattern == '') return originalValue;
+            return targetPattern;
+        }
+
+        this.files.forEach((file) => {
+            let parsed = parseAnimeName(file.name);
+
+            if (parsed) {
+                let raws = applyPattern(this.initialPattern.raws, this.targetPattern.raws, parsed.raws);
+                let title = applyPattern(this.initialPattern.title, this.targetPattern.title, parsed.title);
+                let episode = applyPattern(
+                    this.initialPattern.episode,
+                    this.targetPattern.episode.replace('?', parsed.episodeNumber),
+                    parsed.episodeFull);
+                let codec = applyPattern(this.initialPattern.codec, this.targetPattern.codec, parsed.codec);
+
+                file.targetName = `${raws} ${title} ${episode} ${codec}`.trim() + `.${parsed.extension}`;
+            }
+        });
+    }
+
+    confirmChange() {
+        // TODO: update real filename
+    }
+
+    private updateInitialPattern(key: keyof InitialPattern, value: string): void {
+        let pattern = this.initialPattern;
+
+        if (typeof pattern[key] == 'string') {
+            if (pattern[key] != value) {
+                pattern[key] = PatternException.Various;
+            }
+        } else {
+            if (pattern[key] == PatternException.Clear) {
+                pattern[key] = value;
+            }
+        }
+    }
+
+    private clearInitialPattern() {
+        this.initialPattern.raws = PatternException.Clear;
+        this.initialPattern.title = PatternException.Clear;
+        this.initialPattern.episode = PatternException.Clear;
+        this.initialPattern.codec = PatternException.Clear;
+    }
+
+    private updateTargetPattern() {
         if (this.initialPattern.raws == '') {
-            this.initialPattern.raws = PatternException.Empty;
+            this.initialPattern.raws = PatternException.Clear;
         }
         if (this.initialPattern.title == '') {
-            this.initialPattern.title = PatternException.Empty;
+            this.initialPattern.title = PatternException.Clear;
         }
         if (this.initialPattern.episode == '') {
-            this.initialPattern.episode = PatternException.Empty;
+            this.initialPattern.episode = PatternException.Clear;
         }
         if (this.initialPattern.codec == '') {
-            this.initialPattern.codec = PatternException.Empty;
+            this.initialPattern.codec = PatternException.Clear;
         }
 
         this.targetPattern = {
@@ -155,6 +209,6 @@ export class AppComponent implements AfterViewChecked {
     }
 
     constructor() {
-        this.parsePattern();
+        this.updateTargetPattern();
     }
 }

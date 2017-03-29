@@ -1,4 +1,4 @@
-import {Component, Input, Output} from "@angular/core";
+import {Component, EventEmitter, Input, Output} from "@angular/core";
 
 @Component({
     selector: 'labeled-input',
@@ -11,9 +11,20 @@ import {Component, Input, Output} from "@angular/core";
 `
 })
 export class LabeledInputComponent {
+    private innerValue: string = "";
+
     @Input() input_id: string;
     @Input() input_label: string;
     @Input() placeholder: string = "";
 
-    @Input() @Output() value: string;
+    get value() {
+        return this.innerValue;
+    }
+
+    @Input() set value(newValue: string) {
+        this.innerValue = newValue;
+        this.valueChange.emit(this.innerValue);
+    }
+
+    @Output() valueChange = new EventEmitter();
 }
